@@ -62,30 +62,32 @@ $(function () {
                 form_id = root[el];
             }
             if (el === "questions") {
-                $("body").append(
-                    $("<label></label><br>").text(root[el][0].question),
-                    $("<input type='range' id='range-input'/><br>"),
-                    $("<button type='button' id='range-btn'>Submit</button><br>"),
-                    $("<div id='script'></div>")
+                var i = 0, values = root[el][0]['answer']['values'];
+                scriptTag = $("body");
+
+                scriptTag.append(
+                    $("<label></label><br>").text(root[el][0].question)
                 );
 
-                $('#range-btn').on('click', function () {
-                    submitIndex(root[el][0].id, root[el][0].submit);
-                });
+                while (i < values.length) {
+                    scriptTag.append(
+                        $("<input id='range-btn-" + i + "' type='button' value='" + values[i] + "'/>")
+                    );
 
-                scriptTag = $("#script");
+                    $('#range-btn-'+i).on('click', function () {
+                        spdIndex = this.value;
+                        pushToAnswers(root[el][0].id, spdIndex);
+                        setIndexSpd(root[el][0].submit);
+                    });
+
+                    i++;
+                }
             }
         }
     }
 
-    function submitIndex(range_id, root) {
+    function setIndexSpd(root) {
         scriptTag.empty();
-
-        spdIndex = Math.round($('#range-input').val() / 10);
-        setAnswer(range_id, spdIndex);
-
-        $('#prev-btn').on('click', prevBlock);
-        $('#next-btn').on('click', nextBlock);
 
         root.forEach(function (item) {
             if (item.if) {
@@ -105,7 +107,7 @@ $(function () {
         renderNode(finalScript);
 
         scriptTag.append(
-            $("<button type='button' id='submit-btn'>SEND</button>")
+            $("<button id='submit-btn'>Готово</button>")
         );
         $('#submit-btn').on('click', sendAnswers);
     }
@@ -141,13 +143,23 @@ $(function () {
             if (element.answer.title)
                 scriptTag.append($("<div></div>").text(element.answer.title));
 
-            scriptTag.append(
-                $("<label>" +
-                    "<input type='" + element.answer.type + "' id='" + element.id + "'/>" +
-                    element.question +
-                    "</label>" + "<br>"
-                )
-            );
+            switch (element.answer.type) {
+                case "checkbox":
+                    scriptTag.append(
+                        $("<label>" +
+                            "<input type='checkbox' id='" + element.id + "'/>" + element.question +
+                            "</label>" + "<br>"
+                        )
+                    );
+                    break;
+                default:
+                    scriptTag.append(
+                        $("<label>" + element.question +
+                            "<input type='" + element.answer.type + "' id='" + element.id + "'/>" +
+                            "</label>" + "<br>"
+                        )
+                    );
+            }
 
             tag = $('#' + element.id);
 
@@ -186,13 +198,6 @@ $(function () {
         }
     }
 
-    function setAnswer(id, data) {
-        answers = [{
-            "question_id": id,
-            "answer": data
-        }];
-    }
-
     function pushToAnswers(id, data) {
         for (var i = 0; i < answers.length; i += 1) {
             if (answers[i].question_id === id) {
@@ -204,14 +209,6 @@ $(function () {
             "question_id": id,
             "answer": data
         });
-    }
-
-    function prevBlock() {
-
-    }
-
-    function nextBlock() {
-
     }
 
     function sendAnswers() {
