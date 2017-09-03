@@ -6,6 +6,8 @@ $(function () {
         spdIndex = null,
         form_id = null,
         answers = [],
+        titleScript = '',
+        toggleID = 0,
         currentScript = {},
         finalScript = {},
         commentBlock = '',
@@ -63,18 +65,23 @@ $(function () {
             }
             if (el === "questions") {
                 var i = 0, values = root[el][0]['answer']['values'];
-                scriptTag = $("body");
+                $("body").append(
+                    $("<div id='script'></div>")
+                );
+
+                scriptTag = $("#script");
 
                 scriptTag.append(
-                    $("<label></label><br>").text(root[el][0].question)
+                    $("<div class='index question'></div>").text(root[el][0].question),
+                    $("<div class='index-container'></div>")
                 );
 
                 while (i < values.length) {
-                    scriptTag.append(
-                        $("<input id='range-btn-" + i + "' type='button' value='" + values[i] + "'/>")
+                    $('.index-container').append(
+                        $("<input class='btn' id='range-btn-" + i + "' type='button' value='" + values[i] + "'/>")
                     );
 
-                    $('#range-btn-'+i).on('click', function () {
+                    $('#range-btn-' + i).on('click', function () {
                         spdIndex = this.value;
                         pushToAnswers(root[el][0].id, spdIndex);
                         setIndexSpd(root[el][0].submit);
@@ -92,35 +99,66 @@ $(function () {
         root.forEach(function (item) {
             if (item.if) {
                 if (parseOperation(item.if[0])) {
-                    currentScript = item.questions;
+                    titleScript = item.questions[0].group;
+                    currentScript = item.questions[0].questions;
                 }
             }
         });
 
         root.forEach(function (item) {
             if (item.group)
-                finalScript = [item];
+                finalScript = item;
         });
+
+        scriptTag.append(
+            $("<div class='submit question'>" + titleScript + "</div>"),
+            $("<div class='submit-sheet'></div>")
+        );
+
+        scriptTag = $(".submit-sheet");
 
         renderNode(currentScript);
 
-        renderNode(finalScript);
+        renderFinalScript(finalScript);
 
         scriptTag.append(
-            $("<button id='submit-btn'>Готово</button>")
+            $("<button id='submit-btn' class='btn'>Готово</button>")
         );
         $('#submit-btn').on('click', sendAnswers);
     }
 
     // delete after creating api for ajax-requests
     initInquirer(json);
+    //////////////////////////////////////////////
 
     function renderNode(node) {
         node.forEach(function (item) {
-            if (item.group) {
-                scriptTag.append(
-                    $("<h3></h3>").text(item.group)
-                );
+            if (item.questions) {
+                switch (item.type) {
+                    case "h2":
+                        scriptTag = $(".submit-sheet");
+                        scriptTag.append(
+                            $("<div class='node-title'></div>").text(item.group)
+                        );
+                        break;
+                    case "toggle":
+                        toggleID++;
+                        scriptTag = $(".submit-sheet");
+                        scriptTag.append(
+                            $("<div class='toggle-container'>" +
+                                "<div id='toggle-" + toggleID + "' class='toggle-title'>" + item.group + "</div>" +
+                                "<div class='toggle-body toggle-" + toggleID + "'></div>" +
+                                "</div>")
+                        );
+                        scriptTag = $(".toggle-" + toggleID);
+                        toggleBodyById(toggleID);
+                        break;
+                    case "dictionary":
+                        scriptTag.append(
+                            $("<div class='dictionary-title'></div>").text(item.group)
+                        );
+                        break;
+                }
                 renderNode(item.questions);
             }
             else {
@@ -135,30 +173,42 @@ $(function () {
         if (element.answer.type === "dictionary") {
             dictionary.forEach(function (item) {
                 if (item.id === element.answer.id) {
+                    item.type = "dictionary";
+                    item.group = element.question;
                     renderNode([item]);
                 }
             });
         }
         else {
-            if (element.answer.title)
-                scriptTag.append($("<div></div>").text(element.answer.title));
-
             switch (element.answer.type) {
                 case "checkbox":
                     scriptTag.append(
-                        $("<label>" +
-                            "<input type='checkbox' id='" + element.id + "'/>" + element.question +
-                            "</label>" + "<br>"
+                        $("<div class='checkbox-container'>"
+                            + "<input type='checkbox' id='" + element.id + "'/>"
+                            + "<label for='" + element.id + "'>" + "</label>"
+                            + "<span>" + element.question + "</span>"
+                            + "</div>"
                         )
                     );
                     break;
-                default:
+                case "input":
                     scriptTag.append(
-                        $("<label>" + element.question +
-                            "<input type='" + element.answer.type + "' id='" + element.id + "'/>" +
-                            "</label>" + "<br>"
+                        $("<div class='input-container'>" +
+                            // "<label>" + element.question + "</label>" +
+                            "<textarea class='t-area' placeholder='" +
+                            element.question + "'" +
+                            "id='" + element.id + "'></textarea>"
                         )
                     );
+                    break;
+                case "textarea":
+                    scriptTag.append(
+                        $("<div class='textarea-container'>" +
+                            "<textarea class='t-area' placeholder='" + element.answer.title + "'" +
+                            "id='" + element.id + "'></textarea>"
+                        )
+                    );
+                    break;
             }
 
             tag = $('#' + element.id);
@@ -173,6 +223,18 @@ $(function () {
                 }
                 pushToAnswers(element.id, elementData);
             });
+        }
+    }
+
+    function renderFinalScript(node) {
+        if (node.questions) {
+            if (node.group) {
+                scriptTag = $(".submit-sheet");
+                scriptTag.append(
+                    $("<div class='node-title'></div>").text(node.group)
+                );
+            }
+            renderElement(node.questions[0]);
         }
     }
 
@@ -197,6 +259,15 @@ $(function () {
             }
         }
     }
+
+    function toggleBodyById(i) {
+        $('#toggle-' + i).on('click', function () {
+            $(".toggle-" + i).toggle(200);
+        });
+    }
+
+    ////////////////////////////////////
+    ////////////////////////////////////
 
     function pushToAnswers(id, data) {
         for (var i = 0; i < answers.length; i += 1) {
