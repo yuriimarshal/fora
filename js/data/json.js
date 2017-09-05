@@ -7,7 +7,7 @@ var json = {
                 "question": "Наскільки ймовірно, що Ви порадите робити покупки в мережі магазинів Фора своїм друзям та колегам?",
                 "answer": {
                     "type": "range",
-                    "values": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                    "values": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
                 },
                 "submit": [
                     {
@@ -28,6 +28,7 @@ var json = {
                                             {
                                                 "group": "Товару, що мене цікавив, не було у наявності",
                                                 "type": "toggle",
+                                                "id": "ntgrgrt3jvf",
                                                 "questions": [
                                                     {
                                                         "id": "204c24203",
@@ -42,6 +43,7 @@ var json = {
                                             {
                                                 "group": "Не було у наявності сезонних фруктів та/або овочів",
                                                 "type": "toggle",
+                                                "id": "nt455grt3jvf",
                                                 "questions": [
                                                     {
                                                         "id": "erhf345hjb44",
@@ -55,6 +57,7 @@ var json = {
                                             {
                                                 "group": "Мене не влаштувала свіжість та якість деяких товарів",
                                                 "type": "toggle",
+                                                "id": "ntgr785t3jvf",
                                                 "questions": [
                                                     {
                                                         "id": "erhf3fergb44",
@@ -74,6 +77,7 @@ var json = {
                                             {
                                                 "group": "Ціни на потрібні мені товари були вищими ніж в інших торгових точках",
                                                 "type": "toggle",
+                                                "id": "234rgrt3jvf",
                                                 "questions": [
                                                     {
                                                         "id": "erhf454rgb44",
@@ -87,6 +91,7 @@ var json = {
                                             {
                                                 "group": "Ціни на сезонні фрукти та/або овочі зависокі",
                                                 "type": "toggle",
+                                                "id": "n5345363jvf",
                                                 "questions": [
                                                     {
                                                         "id": "erh43fdgegb44",

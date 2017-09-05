@@ -37,12 +37,14 @@ $(function () {
     };
 
     // for example, URL:
-    // http://dummy.com/?filial=some_filial_id&card=user_card_id
+    // http://fora.com/?filial=some_filial_id&card=user_card_id
 
     var userInfo = {
-        filial: getUrlParameter('filial') || false,
-        card: getUrlParameter('card') || false
+        filial: getUrlParameter('filial') || 'вул. Богдана Хмельницького, 18',
+        card: getUrlParameter('card') || '0201234567890'
     };
+    $("#user-filial").text(userInfo.filial);
+    $("#user-card").text(userInfo.card);
 
     ////////////////////////////
     //         Parser         //
@@ -146,12 +148,16 @@ $(function () {
                         scriptTag = $(".submit-sheet");
                         scriptTag.append(
                             $("<div class='toggle-container'>" +
-                                "<div id='toggle-" + toggleID + "' class='toggle-title'>" + item.group + "</div>" +
-                                "<div class='toggle-body toggle-" + toggleID + "'></div>" +
+                                "<div class='checkbox-container' id='toggle-" + item.id + "'>" +
+                                "<input class='toggle-checkbox' type='checkbox' id='tc-" + item.id + "'/>" +
+                                "<label class='toggle-checkbox' for='tc-" + item.id + "'>" + "</label>" +
+                                "<div class='toggle-title'>" + item.group + "</div>" +
+                                "</div>" +
+                                "<div class='toggle-body toggle-" + item.id + "'></div>" +
                                 "</div>")
                         );
-                        scriptTag = $(".toggle-" + toggleID);
-                        toggleBodyById(toggleID);
+                        scriptTag = $(".toggle-" + item.id);
+                        toggleBodyById(item.id);
                         break;
                     case "dictionary":
                         scriptTag.append(
@@ -168,7 +174,7 @@ $(function () {
     }
 
     function renderElement(element) {
-        var tag, elementData;
+        var tagElement, checker, elementData;
 
         if (element.answer.type === "dictionary") {
             dictionary.forEach(function (item) {
@@ -183,10 +189,12 @@ $(function () {
             switch (element.answer.type) {
                 case "checkbox":
                     scriptTag.append(
-                        $("<div class='checkbox-container'>"
+                        $("<div class='checkbox-container bottom'>"
                             + "<input type='checkbox' id='" + element.id + "'/>"
                             + "<label for='" + element.id + "'>" + "</label>"
                             + "<span>" + element.question + "</span>"
+                            + "<input id='dt-" + element.id + "' style='visibility: hidden' " +
+                            "type='text' placeholder='Назва продукції' />"
                             + "</div>"
                         )
                     );
@@ -211,15 +219,22 @@ $(function () {
                     break;
             }
 
-            tag = $('#' + element.id);
+            tagElement = $('#' + element.id);
 
-            tag.on('change', function () {
+            tagElement.on('change', function () {
                 switch (element.answer.type) {
                     case "checkbox":
-                        elementData = tag.is(":checked");
+                        checker = tagElement.is(":checked");
+                        checker ?
+                            $("#dt-" + element.id).css('visibility', 'visible') :
+                            $("#dt-" + element.id).css('visibility', 'hidden');
+                        elementData = $("#dt-" + element.id).val('');
+                        $("#dt-" + element.id).on('change', function () {
+                            pushToAnswers(element.id, elementData[0].value);
+                        });
                         break;
                     default:
-                        elementData = tag.val();
+                        elementData = tagElement.val();
                 }
                 pushToAnswers(element.id, elementData);
             });
@@ -260,9 +275,12 @@ $(function () {
         }
     }
 
-    function toggleBodyById(i) {
-        $('#toggle-' + i).on('click', function () {
-            $(".toggle-" + i).toggle(200);
+    function toggleBodyById(id) {
+        $('#toggle-' + id).on('click', function (e) {
+            pushToAnswers(id, true);
+            $(".toggle-" + id).toggle(200);
+            $("#tc-" + id).prop('checked', !$("#tc-" + id).is(":checked"));
+            e.preventDefault();
         });
     }
 
@@ -272,7 +290,9 @@ $(function () {
     function pushToAnswers(id, data) {
         for (var i = 0; i < answers.length; i += 1) {
             if (answers[i].question_id === id) {
-                !data ? answers.splice(i, 1) : answers[i].answer = data;
+                data === false ?
+                    answers.splice(i, 1) :
+                    answers[i].answer = data;
                 return;
             }
         }
