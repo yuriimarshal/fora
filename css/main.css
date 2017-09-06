@@ -88,6 +88,9 @@ textarea {
 /* ==========================================================================
    Author's custom styles
    ========================================================================== */
+
+/*@import url(http://fonts.googleapis.com/css?family=Open+Sans);*/
+
 *:focus {
     outline: 0 !important;
 }

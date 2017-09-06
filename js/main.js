@@ -318,7 +318,7 @@ $(function () {
 
         $.ajax({
             type: "POST",
-            url: "http://some/url",
+            url: "http://fora.development.digicode.ua/api/questionnaire",
             data: JSON.stringify(output),
             dataType: "json",
             success: function (res) {
@@ -329,9 +329,9 @@ $(function () {
 
     (function () {
         // $.ajax({
-        //     method: "GET",
-        //     url: "http://some/url",
-        //     dataType: "json",
+        //     method: "POST",
+        //     url: "http://fora.development.digicode.ua/api/questionnaire",
+        //     dataType: 'json',
         //     success: function (data) {
         //         initInquirer(data);
         //     }
