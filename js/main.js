@@ -31,17 +31,18 @@ $(function () {
             sParameterName = sURLVariables[i].split('=');
 
             if (sParameterName[0] === sParam) {
+                sParameterName[1] = sParameterName[1].replace(/\+/g, " ");
                 return sParameterName[1] === undefined ? true : sParameterName[1];
             }
         }
     };
 
     // for example, URL:
-    // http://fora.com/?filial=some_filial_id&card=user_card_id
+    // http://fora.com/?filial='вул. Богдана Хмельницького, 18'&card='0201234567890'
 
     var userInfo = {
-        filial: getUrlParameter('filial') || 'вул. Богдана Хмельницького, 18',
-        card: getUrlParameter('card') || '0201234567890'
+        filial: getUrlParameter('filial'),
+        card: getUrlParameter('card')
     };
     $("#user-filial").text(userInfo.filial);
     $("#user-card").text(userInfo.card);
@@ -50,9 +51,7 @@ $(function () {
     //         Parser         //
     ////////////////////////////
 
-    function initInquirer(data) {
-        // input = JSON.parse(data);
-
+    function initInquirer() {
         for (var key in input) {
             if (key === "form") {
                 root = input[key];
@@ -175,69 +174,70 @@ $(function () {
 
     function renderElement(element) {
         var tagElement, checker, elementData;
-
-        if (element.answer.type === "dictionary") {
-            dictionary.forEach(function (item) {
-                if (item.id === element.answer.id) {
-                    item.type = "dictionary";
-                    item.group = element.question;
-                    renderNode([item]);
-                }
-            });
-        }
-        else {
-            switch (element.answer.type) {
-                case "checkbox":
-                    scriptTag.append(
-                        $("<div class='checkbox-container bottom'>"
-                            + "<input type='checkbox' id='" + element.id + "'/>"
-                            + "<label for='" + element.id + "'>" + "</label>"
-                            + "<span>" + element.question + "</span>"
-                            + "<input id='dt-" + element.id + "' style='visibility: hidden' " +
-                            "type='text' placeholder='Назва продукції' />"
-                            + "</div>"
-                        )
-                    );
-                    break;
-                case "input":
-                    scriptTag.append(
-                        $("<div class='input-container'>" +
-                            // "<label>" + element.question + "</label>" +
-                            "<textarea class='t-area' placeholder='" +
-                            element.question + "'" +
-                            "id='" + element.id + "'></textarea>"
-                        )
-                    );
-                    break;
-                case "textarea":
-                    scriptTag.append(
-                        $("<div class='textarea-container'>" +
-                            "<textarea class='t-area' placeholder='" + element.answer.title + "'" +
-                            "id='" + element.id + "'></textarea>"
-                        )
-                    );
-                    break;
+        if (element.answer) {
+            if (element.answer.type === "dictionary") {
+                dictionary.forEach(function (item) {
+                    if (item.id === element.answer.id) {
+                        item.type = "dictionary";
+                        item.group = element.question;
+                        renderNode([item]);
+                    }
+                });
             }
-
-            tagElement = $('#' + element.id);
-
-            tagElement.on('change', function () {
+            else {
                 switch (element.answer.type) {
                     case "checkbox":
-                        checker = tagElement.is(":checked");
-                        checker ?
-                            $("#dt-" + element.id).css('visibility', 'visible') :
-                            $("#dt-" + element.id).css('visibility', 'hidden');
-                        elementData = $("#dt-" + element.id).val('');
-                        $("#dt-" + element.id).on('change', function () {
-                            pushToAnswers(element.id, elementData[0].value);
-                        });
+                        scriptTag.append(
+                            $("<div class='checkbox-container bottom'>"
+                                + "<input type='checkbox' id='" + element.id + "'/>"
+                                + "<label for='" + element.id + "'>" + "</label>"
+                                + "<span>" + element.question + "</span>"
+                                + "<input id='dt-" + element.id + "' style='visibility: hidden' " +
+                                "type='text' placeholder='Назва продукції' />"
+                                + "</div>"
+                            )
+                        );
                         break;
-                    default:
-                        elementData = tagElement.val();
+                    case "input":
+                        scriptTag.append(
+                            $("<div class='input-container'>" +
+                                // "<label>" + element.question + "</label>" +
+                                "<textarea class='t-area' placeholder='" +
+                                element.question + "'" +
+                                "id='" + element.id + "'></textarea>"
+                            )
+                        );
+                        break;
+                    case "textarea":
+                        scriptTag.append(
+                            $("<div class='textarea-container'>" +
+                                "<textarea class='t-area' placeholder='" + element.answer.title + "'" +
+                                "id='" + element.id + "'></textarea>"
+                            )
+                        );
+                        break;
                 }
-                pushToAnswers(element.id, elementData);
-            });
+
+                tagElement = $('#' + element.id);
+
+                tagElement.on('change', function () {
+                    switch (element.answer.type) {
+                        case "checkbox":
+                            checker = tagElement.is(":checked");
+                            checker ?
+                                $("#dt-" + element.id).css('visibility', 'visible') :
+                                $("#dt-" + element.id).css('visibility', 'hidden');
+                            elementData = $("#dt-" + element.id).val('');
+                            $("#dt-" + element.id).on('change', function () {
+                                pushToAnswers(element.id, elementData[0].value);
+                            });
+                            break;
+                        default:
+                            elementData = tagElement.val();
+                    }
+                    pushToAnswers(element.id, elementData);
+                });
+            }
         }
     }
 
@@ -326,15 +326,4 @@ $(function () {
             }
         });
     }
-
-    (function () {
-        // $.ajax({
-        //     method: "POST",
-        //     url: "http://fora.development.digicode.ua/api/questionnaire",
-        //     dataType: 'json',
-        //     success: function (data) {
-        //         initInquirer(data);
-        //     }
-        // });
-    })();
 });
